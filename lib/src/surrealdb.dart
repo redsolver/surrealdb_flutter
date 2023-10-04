@@ -6,10 +6,11 @@ import 'package:surrealdb/surrealdb.dart';
 class SurrealDB {
   SurrealDB(
     this.url, {
+    required this.onError,
     this.token,
     this.options = const SurrealDBOptions(),
   }) {
-    _wsService = WSService(url, options);
+    _wsService = WSService(url, options, onError);
   }
   final String url;
   final String? token;
@@ -17,6 +18,7 @@ class SurrealDB {
   Pinger? _pinger;
   late final WSService _wsService;
   final SurrealDBOptions options;
+  final ErrorCallback onError;
 
   /// Connects to a local or remote database endpoint.
   void connect() {

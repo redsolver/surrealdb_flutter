@@ -10,11 +10,13 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 typedef WsFunctionParam = Map<String, dynamic>;
 typedef WsFunction = void Function(WsFunctionParam);
+typedef ErrorCallback = void Function(String);
 
 class WSService {
-  WSService(this.url, this.options);
+  WSService(this.url, this.options, this.onError);
   final String url;
   final SurrealDBOptions options;
+  final ErrorCallback onError;
 
   WebSocketChannel? _ws;
   final _methodBus = EventEmitter<String>();
@@ -83,6 +85,8 @@ class WSService {
     return (_serial++).toString();
   }
 
+  final rpcRequests = <String, String>{};
+
   Future<Object?> rpc(
     String method, [
     List<Object?> data = const [],
@@ -97,6 +101,8 @@ class WSService {
     }
 
     final id = getNextId();
+
+    rpcRequests[id] = '$method $data';
 
     ws.sink.add(
       jsonEncode(
@@ -132,6 +138,7 @@ class WSService {
 
   Future<void> _handleMessage(Map<String, dynamic> data) async {
     try {
+      rpcRequests.remove(data['id']);
       if (data
           case {
             'result': {
@@ -156,7 +163,8 @@ class WSService {
         error ??= {};
         _methodBus.emit(id, RpcResponse(error, error));
       } else {
-        throw Exception('invalid message');
+         onError('RPC request failed: $data (${rpcRequests[data['id']]})');
+        rpcRequests.remove(data['id']);
       }
     } catch (_) {
       rethrow;
