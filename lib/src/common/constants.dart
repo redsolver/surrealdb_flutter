@@ -15,6 +15,7 @@ class Methods {
   static const query = 'query';
   static const update = 'update';
   static const merge = 'merge';
+  static const change = 'change';
   static const delete = 'delete';
   static const live = 'live';
 }
