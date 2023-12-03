@@ -85,7 +85,7 @@ class WSService {
     return (_serial++).toString();
   }
 
-  final rpcRequests = <String, String>{};
+  // final rpcRequests = <String, String>{};
 
   Future<Object?> rpc(
     String method, [
@@ -102,7 +102,7 @@ class WSService {
 
     final id = getNextId();
 
-    rpcRequests[id] = '$method $data';
+    // rpcRequests[id] = '$method $data';
 
     ws.sink.add(
       jsonEncode(
@@ -127,7 +127,10 @@ class WSService {
     _methodBus.once<RpcResponse>(id, (rpcResponse) {
       if (completer.isCompleted) return;
       if (rpcResponse.error != null) {
-        completer.completeError(rpcResponse.error!);
+        onError('RPC request failed: ${rpcResponse.error} for $method $data');
+        // rpcRequests.remove(data['id']);
+        // print('ERROR ${} ${rpcResponse.error}');
+        // completer.completeError(rpcResponse.error!);
       } else {
         completer.complete(rpcResponse.data);
       }
@@ -138,7 +141,6 @@ class WSService {
 
   Future<void> _handleMessage(Map<String, dynamic> data) async {
     try {
-      rpcRequests.remove(data['id']);
       if (data
           case {
             'result': {
@@ -162,10 +164,7 @@ class WSService {
           }) {
         error ??= {};
         _methodBus.emit(id, RpcResponse(error, error));
-      } else {
-         onError('RPC request failed: $data (${rpcRequests[data['id']]})');
-        rpcRequests.remove(data['id']);
-      }
+      } else {}
     } catch (_) {
       rethrow;
     }

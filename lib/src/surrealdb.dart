@@ -200,9 +200,11 @@ class SurrealDB {
   /// @param thing - The table name or the specific record ID to update.
   /// @param data - The document / record data to insert.
   Future<Object?> update(
-    String thing, [
-    Object? data,
-  ]) {
+    String thing,
+    Map data,
+  ) {
+    data.removeWhere((_, v) => v == null);
+
     return _wsService.rpc(Methods.update, [thing, data]);
   }
 
@@ -211,12 +213,13 @@ class SurrealDB {
   /// ***NOTE: This function merges the current document / record data with the specified data.***
   /// @param thing - The table name or the specific record ID to change.
   /// @param data - The document / record data to insert.
-  Future<Object?> change(
-    String thing, [
-    Object? data,
-  ]) {
+  /* Future<Object?> change(
+    String thing,
+    Map data,
+  ) {
+    data.removeWhere((_, v) => v == null);
     return _wsService.rpc(Methods.change, [thing, data]);
-  }
+  } */
 
   /// Applies JSON Patch changes to all records,
   /// or a specific record, in the database.
@@ -225,9 +228,10 @@ class SurrealDB {
   /// @param thing - The table name or the specific record ID to modify.
   /// @param data - The JSON Patch data with which to modify the records.
   Future<void> merge(
-    String thing, [
-    Object? data,
-  ]) {
+    String thing,
+    Map data,
+  ) {
+    data.removeWhere((_, v) => v == null);
     return _wsService.rpc(Methods.merge, [thing, data]);
   }
 
